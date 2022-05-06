@@ -1,0 +1,8 @@
+config.json
+bin/
+.DS_Store
+.idea/
+.vscode/
+config.json.ori
+*.bak
+*.swp
