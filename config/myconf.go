@@ -63,20 +63,18 @@ func (c *MailConfigFile) StartWorker(mode int) {
 
 func (c *MailConfigFile) createMailClient() error {
 	var conn net.Conn
+	var err error
 	if c.IsTLS {
-		conn, err := tls.Dial("tcp", c.ServerAddr, &tls.Config{
+		conn, err = tls.Dial("tcp", c.ServerAddr, &tls.Config{
 			InsecureSkipVerify: c.TLSVerification == 1,
 		})
-		conn.SetDeadline(time.Now().Add(time.Second * 5))
-		if err != nil {
-			return err
-		}
+	} else {
+		conn, err = net.Dial("tcp", c.ServerAddr)
 	}
-	conn, err := net.Dial("tcp", c.ServerAddr)
-	conn.SetDeadline(time.Now().Add(time.Second * 5))
 	if err != nil {
 		return err
 	}
+	conn.SetDeadline(time.Now().Add(time.Second * 180))
 	c.relyNetConn = conn
 	switch c.Protocol {
 	case "imap":
@@ -92,7 +90,8 @@ func (c *MailConfigFile) createMailClient() error {
 
 func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 	for {
-		time.Sleep(2 * time.Minute)
+		time.Sleep(10 * time.Second) // debug only
+		//time.Sleep(2 * time.Minute)
 
 		err := c.createMailClient()
 		if err != nil {
