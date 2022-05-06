@@ -24,7 +24,7 @@ Example:
 
 ```jsonc
 {
-  "protocol": "imaps",   // valid values: imaps, imap, pop3, pop3s
+  "protocol": "imaps",   // valid values: imaps, imap ; WE DO NOT SUPPORT POP3
   "server": "my-email-server.com:995",   // server:port
   "user_email": "zhangsan@my-email-server.com",    // user email
   "password": "MY-PASSWORD-HERE",   // user password
