@@ -19,7 +19,7 @@ var XOR_KEY = []byte{0x8A}
 type MailConfigFile struct {
 	Protocol        string `json:"protocol" validate:"oneof=imap imaps,required"`
 	ServerAddr      string `json:"server" validate:"required"`
-	UserEmail       string `json:"user_email" validate:"required,email"`
+	UserEmail       string `json:"user_email" validate:"required"`
 	Password        string `json:"password" validate:"required"`
 	SaveTo          string `json:"save_to,omitempty"`
 	IsTLS           bool   `json:"enableTLS,omitempty"`
