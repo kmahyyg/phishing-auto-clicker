@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	"github.com/go-playground/validator/v10"
 	"io/ioutil"
@@ -104,8 +105,17 @@ func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 		}
 		log.Println("Login successful.")
 
-		// todo: get mail list
-	
+		// todo: get mailbox list
+		mailboxes := make(chan *imaplib.MailboxInfo, 10)
+		doneCh := make(chan error, 1)
+		go func() {
+			doneCh <- c.mailClient.List("", "*", mailboxes)
+		}()
+
+		log.Println("Mailboxes:")
+		for m := range mailboxes {
+			log.Println("* " + m.Name)
+		}
 		// parse each mail
 		// download attachment
 		// save attachment
