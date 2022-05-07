@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log"
 	"os"
 	"os/signal"
+	"phishingAutoClicker/common"
 	"phishingAutoClicker/config"
+	"phishingAutoClicker/utils"
 )
 
 var (
@@ -31,12 +34,21 @@ func main() {
 		conf.Protocol = conf.Protocol[:len(conf.Protocol)-1]
 	}
 	// get temp folder
-	log.Println("Create storage for temporary file.")
-	conf.SaveTo, err = os.MkdirTemp("", "foolguy-")
-	if err != nil {
-		panic(err)
+	if conf.SaveTo == "" {
+		// build temp folder
+		log.Println("Create storage for temporary file.")
+		conf.SaveTo, err = os.MkdirTemp("", "foolguy-")
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		a, b := utils.CheckExists(conf.SaveTo)
+		if !a || b != 1 {
+			panic(errors.New("storage folder not exists"))
+		}
 	}
 	defer os.RemoveAll(conf.SaveTo)
+	common.GlobalTemporaryStorage = conf.SaveTo
 	// start clicker
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)

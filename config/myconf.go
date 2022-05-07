@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	"github.com/go-playground/validator/v10"
 	"io/ioutil"
@@ -51,14 +50,10 @@ func (c *MailConfigFile) Load(path string) error {
 }
 
 func (c *MailConfigFile) StartWorker(mode int) {
-	switch mode {
-	case 1:
-		c.startEmailAttachmentEventLoop()
-	case 2:
-		c.startEmailLinkEventLoop()
-	default:
+	if mode != 1 && mode != 2 {
 		panic(errors.New("unknown work mode"))
 	}
+	c.startEmailEventLoop(mode)
 }
 
 func (c *MailConfigFile) createMailClient() error {
@@ -88,64 +83,7 @@ func (c *MailConfigFile) createMailClient() error {
 	}
 }
 
-func loginMailboxAndCheck(mailClient *imapcli.Client, conf *MailConfigFile) (*imaplib.MailboxStatus, error) {
-	// login with creds
-	err := mailClient.Login(conf.UserEmail, conf.Password)
-	if err != nil {
-		panic(err)
-	}
-	log.Println("Login successful.")
-
-	// list mailboxes
-	mailboxes := make(chan *imaplib.MailboxInfo, 10)
-	err = mailClient.List("", "*", mailboxes)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Printf("\n List Mailboxes: ")
-	foundInboxFlag := false
-	for m := range mailboxes {
-		log.Println(" " + m.Name + " ,")
-		if m.Name == "INBOX" {
-			foundInboxFlag = true
-			log.Println("Mailbox: INBOX found.")
-			break
-		}
-	}
-	// check if inbox exists
-	if !foundInboxFlag {
-		err = errors.New("cannot find correct INBOX mailbox folder")
-		log.Println(err)
-		return nil, err
-	}
-	// select mailbox
-	mbox, err := mailClient.Select("INBOX", false)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	return mbox, nil
-}
-
-func fetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (msgList chan *imaplib.Message, err error) {
-	// build fetch range
-	if end == 0 || start < end {
-		return nil, errors.New("invalid range for mail message sequence num")
-	}
-	seqSet := new(imaplib.SeqSet)
-	seqSet.AddRange(start, end)
-	log.Printf("Fetching unread from %d to %d in inbox \n", start, end)
-	msgList = make(chan *imaplib.Message, 100)
-	// what should we fetch? all of email data
-	err = client.Fetch(seqSet, []imaplib.FetchItem{imaplib.FetchAll}, msgList)
-	if err != nil {
-		return nil, err
-	}
-	return msgList, nil
-}
-
-func (c *MailConfigFile) startEmailAttachmentEventLoop() {
+func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 	for {
 		// instantiate mail client
 		time.Sleep(5 * time.Second)
@@ -155,23 +93,40 @@ func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 		}
 		log.Println("Client created.")
 		// login and get mailbox
-		mbox, err := loginMailboxAndCheck(c.mailClient, c)
+		mbox, err := utils.LoginMailboxAndCheck(c.mailClient, c.UserEmail, c.Password)
 		if err != nil {
 			panic(err)
 		}
+		log.Println("loginMailboxAndCheck successful.")
 		// fetch msgs
-		msgsLst, err := fetchMsgRangeFromInbox(mbox.UnseenSeqNum, mbox.Messages, c.mailClient)
+		msgsLst, err := utils.FetchMsgRangeFromInbox(mbox.UnseenSeqNum, mbox.Messages, c.mailClient)
 		if err != nil {
 			log.Println(err)
+			close(msgsLst)
 			c.exitConn()
 			continue
 		}
-		// download attachment
-		// save attachment
-		// if office, execute
-		// if zip, extract
-		// execute then kill after timeout
-		// set read mail
+		log.Println("fetchMsgRangeFromInbox successful.")
+		// for each message, op
+		noMoreMsgs := false
+		for {
+			msg, exist := <-msgsLst
+			// if no more messages, break
+			if !exist {
+				// early exit
+				log.Println("No more messages to fetch.")
+				noMoreMsgs = true
+				break
+			}
+			// parse each message with workload type, log incoming, return attachment bytes
+			err = utils.ParseEmailMessageAndWork(msg, worktype)
+			//TODO
+		}
+		if noMoreMsgs {
+			close(msgsLst)
+			c.exitConn()
+			continue
+		}
 		c.exitConn()
 	}
 }
@@ -179,16 +134,4 @@ func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 func (c *MailConfigFile) exitConn() {
 	c.mailClient.Logout()
 	c.relyNetConn.Close()
-}
-
-func (c *MailConfigFile) startEmailLinkEventLoop() {
-	for {
-		time.Sleep(2 * time.Minute)
-
-		// parse each mail
-		// find the first link start with [SPACE]https://xxx[SPACE]
-		// if not found, try [SPACE]http://xxx[SPACE]
-		// open page, kill browser after timeout
-
-	}
 }
