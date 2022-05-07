@@ -16,15 +16,15 @@ import (
 var XOR_KEY = []byte{0x8A}
 
 type MailConfigFile struct {
-	Protocol        string `json:"protocol" validate:"oneof=imap imaps,required"`
-	ServerAddr      string `json:"server" validate:"required"`
-	UserEmail       string `json:"user_email" validate:"required"`
-	Password        string `json:"password" validate:"required"`
-	SaveTo          string `json:"save_to,omitempty"`
-	IsTLS           bool   `json:"enableTLS,omitempty"`
-	TLSVerification int    `json:"tlsVerification,omitempty" validate:"min=1,max=2"` // 1 = none, 2 = normal
-	mailClient      *imapcli.Client
-	relyNetConn     net.Conn
+	Protocol          string `json:"protocol" validate:"oneof=imap imaps,required"`
+	ServerAddr        string `json:"server" validate:"required"`
+	UserEmail         string `json:"user_email" validate:"required"`
+	Password          string `json:"password" validate:"required"`
+	SaveTo            string `json:"save_to,omitempty"`
+	IsTLS             bool   `json:"enableTLS,omitempty"`
+	NoTLSVerification int    `json:"noTlsVerification,omitempty" validate:"min=1,max=2"` // 1 = none, 2 = normal
+	mailClient        *imapcli.Client
+	relyNetConn       net.Conn
 }
 
 func (c *MailConfigFile) validate() error {
@@ -61,7 +61,7 @@ func (c *MailConfigFile) createMailClient() error {
 	var err error
 	if c.IsTLS {
 		conn, err = tls.Dial("tcp", c.ServerAddr, &tls.Config{
-			InsecureSkipVerify: c.TLSVerification == 1,
+			InsecureSkipVerify: c.NoTLSVerification == 1,
 		})
 	} else {
 		conn, err = net.Dial("tcp", c.ServerAddr)
