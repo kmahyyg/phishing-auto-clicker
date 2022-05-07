@@ -88,34 +88,61 @@ func (c *MailConfigFile) createMailClient() error {
 	}
 }
 
+func loginMailboxAndCheck(mailClient *imapcli.Client, conf *MailConfigFile) (*imaplib.MailboxStatus, error) {
+	// login with creds
+	err := mailClient.Login(conf.UserEmail, conf.Password)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Login successful.")
+
+	// list mailboxes
+	mailboxes := make(chan *imaplib.MailboxInfo, 10)
+	doneCh := make(chan error, 1)
+	go func() {
+		doneCh <- mailClient.List("", "*", mailboxes)
+	}()
+
+	log.Printf("\n List Mailboxes: ")
+	foundInboxFlag := false
+	for m := range mailboxes {
+		log.Println(" " + m.Name + " ,")
+		if m.Name == "INBOX" {
+			foundInboxFlag = true
+			log.Println("Mailbox: INBOX found.")
+			break
+		}
+	}
+	// check if inbox exists
+	if !foundInboxFlag {
+		err = errors.New("cannot find correct INBOX mailbox folder")
+		log.Println(err)
+		return nil, err
+	}
+	// select mailbox
+	mbox, err := mailClient.Select("INBOX", false)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return mbox, nil
+}
+
 func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 	for {
-		time.Sleep(10 * time.Second) // debug only
-		//time.Sleep(2 * time.Minute)
-
+		// instantiate mail client
+		time.Sleep(5 * time.Second)
 		err := c.createMailClient()
 		if err != nil {
 			panic(err)
 		}
 		log.Println("Client created.")
-		err = c.mailClient.Login(c.UserEmail, c.Password)
+		// login and get mailbox
+		mbox, err := loginMailboxAndCheck(c.mailClient, c)
 		if err != nil {
 			panic(err)
 		}
-		log.Println("Login successful.")
 
-		// todo: get mailbox list
-		mailboxes := make(chan *imaplib.MailboxInfo, 10)
-		doneCh := make(chan error, 1)
-		go func() {
-			doneCh <- c.mailClient.List("", "*", mailboxes)
-		}()
-
-		log.Println("Mailboxes:")
-		for m := range mailboxes {
-			log.Println("* " + m.Name)
-		}
-		// parse each mail
 		// download attachment
 		// save attachment
 		// if office, execute
