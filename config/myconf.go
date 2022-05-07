@@ -98,10 +98,10 @@ func loginMailboxAndCheck(mailClient *imapcli.Client, conf *MailConfigFile) (*im
 
 	// list mailboxes
 	mailboxes := make(chan *imaplib.MailboxInfo, 10)
-	doneCh := make(chan error, 1)
-	go func() {
-		doneCh <- mailClient.List("", "*", mailboxes)
-	}()
+	err = mailClient.List("", "*", mailboxes)
+	if err != nil {
+		panic(err)
+	}
 
 	log.Printf("\n List Mailboxes: ")
 	foundInboxFlag := false
@@ -128,6 +128,23 @@ func loginMailboxAndCheck(mailClient *imapcli.Client, conf *MailConfigFile) (*im
 	return mbox, nil
 }
 
+func fetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (msgList chan *imaplib.Message, err error) {
+	// build fetch range
+	if end == 0 || start < end {
+		return nil, errors.New("invalid range for mail message sequence num")
+	}
+	seqSet := new(imaplib.SeqSet)
+	seqSet.AddRange(start, end)
+	log.Printf("Fetching unread from %d to %d in inbox \n", start, end)
+	msgList = make(chan *imaplib.Message, 100)
+	// what should we fetch? all of email data
+	err = client.Fetch(seqSet, []imaplib.FetchItem{imaplib.FetchAll}, msgList)
+	if err != nil {
+		return nil, err
+	}
+	return msgList, nil
+}
+
 func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 	for {
 		// instantiate mail client
@@ -142,13 +159,19 @@ func (c *MailConfigFile) startEmailAttachmentEventLoop() {
 		if err != nil {
 			panic(err)
 		}
-
+		// fetch msgs
+		msgsLst, err := fetchMsgRangeFromInbox(mbox.UnseenSeqNum, mbox.Messages, c.mailClient)
+		if err != nil {
+			log.Println(err)
+			c.exitConn()
+			continue
+		}
 		// download attachment
 		// save attachment
 		// if office, execute
 		// if zip, extract
 		// execute then kill after timeout
-		// delete mail
+		// set read mail
 		c.exitConn()
 	}
 }
