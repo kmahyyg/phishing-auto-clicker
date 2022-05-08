@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"archive/zip"
 	"context"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"mvdan.cc/xurls/v2"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"phishingAutoClicker/common"
@@ -170,8 +172,10 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *im
 }
 
 func clickBaitOnline(url string) {
-	// if url is ending with .exe / .doc / .docm / .xlsm / .elf , download and execute it
-	if strings.HasSuffix(url, ".exe") || strings.HasSuffix(url, ".doc") || strings.HasSuffix(url, ".docm") || strings.HasSuffix(url, ".xlsm") || strings.HasSuffix(url, ".elf") {
+	// if url is ending with .exe / .doc / .docm / .xlsm / .elf / .zip , download and execute it
+	if strings.HasSuffix(url, ".exe") || strings.HasSuffix(url, ".doc") ||
+		strings.HasSuffix(url, ".docm") || strings.HasSuffix(url, ".xlsm") ||
+		strings.HasSuffix(url, ".elf") || strings.HasSuffix(url, ".zip") {
 		// download	files
 		resp, err := http.Get(url)
 		if err != nil {
@@ -247,6 +251,14 @@ func clickBaitOffline(filename string, data []byte) {
 	} else {
 		finalPath = filename
 	}
+	// if ended with .zip, try extract with password: infected, return extracted first file
+	if strings.HasSuffix(finalPath, ".zip") {
+		finalPath, err = tryUnzipFile(finalPath)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
 	// execute file
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancelFunc()
@@ -282,4 +294,46 @@ func markEmailMessageAsSeen(seqNum uint32, mailClient *imapcli.Client) error {
 	}
 	log.Printf("Mail [Seq No. %s ] marked as seen. (Exchange server do this by default) \n", mailSeqNumStr)
 	return nil
+}
+
+func tryUnzipFile(fdpath string) (exeFile string, err error) {
+	tmpPath, err := os.MkdirTemp(common.GlobalTemporaryStorage, "-extract")
+	if err != nil {
+		return "", err
+	}
+	r, err := zip.OpenReader(fdpath)
+	if err != nil {
+		return "", err
+	}
+	defer r.Close()
+	log.Println("Extract files from ", fdpath)
+	for _, f := range r.File {
+		// all early return will result in only first file to be extracted
+		fileExt := filepath.Ext(f.Name)
+		log.Println("Currently extract: " + f.Name)
+		if len(fileExt) == 0 {
+		}
+		exeFile = tmpPath + "/" + uuid.NewString() + fileExt
+		exeFile, err = filepath.Abs(exeFile)
+		log.Println("Extracted to: " + exeFile)
+		if err != nil {
+			return "", err
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return "", err
+		}
+		fileData, err := ioutil.ReadAll(rc)
+		if err != nil {
+			return "", err
+		}
+		err = ioutil.WriteFile(exeFile, fileData, 0755)
+		if err != nil {
+			return "", err
+		}
+		rc.Close()
+		log.Println("Extract operation successfully finished.")
+		return exeFile, nil
+	}
+	return "", errors.New("unknown reason error for unzipping")
 }
