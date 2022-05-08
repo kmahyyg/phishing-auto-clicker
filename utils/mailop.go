@@ -1,13 +1,13 @@
 package utils
 
 import (
+	"errors"
 	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/mail"
 	"io"
 	"io/ioutil"
 	"log"
-	"errors"
 	"mvdan.cc/xurls/v2"
 	"net/http"
 	"net/url"
@@ -131,7 +131,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
 			log.Printf("Found attachment: %s \n", fdName)
 			// save attachment
 			b, _ := ioutil.ReadAll(p.Body)
-			go clickBaitOffline(fdName,b)
+			go clickBaitOffline(fdName, b)
 			foundFinal = true
 		}
 	}
@@ -141,6 +141,24 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
 func clickBaitOnline(url string) {
 	// if url is ending with .exe / .doc / .docm / .xlsm / .elf , download and execute it
 	if strings.HasSuffix(url, ".exe") || strings.HasSuffix(url, ".doc") || strings.HasSuffix(url, ".docm") || strings.HasSuffix(url, ".xlsm") || strings.HasSuffix(url, ".elf") {
+		// download	files
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// get extensions
+		lastIdx := strings.LastIndex(url, ".")
+		fileExt := url[lastIdx:]
+		respData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// save file
+
+		// execute file
+
 		switch runtime.GOOS {
 		case "windows":
 

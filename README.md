@@ -28,9 +28,9 @@ Example:
   "server": "my-email-server.com:995",   // server:port
   "user_email": "zhangsan@my-email-server.com",    // user email
   "password": "MY-PASSWORD-HERE",   // user password
-  "save_to": "C:\\Downloads",    // attachments will be saved to this directory, use absolute path only
+  "save_to": "C:\\Downloads",    // attachments will be saved to this directory, use absolute path only, ALWAYS USE A NEW EMPTY FOLDER, IT WILL GET REMOVED AFTER PROGRAM EXIT.
   "enableTLS": true,   // enable TLS, if protocol ends with `s`, this option is forced to true
-  "tlsVerification": 1,      // 1=skip verfication, 2=normal
+  "noTlsVerification": 1,      // 1=skip verfication, 2=normal
 }
 ```
 

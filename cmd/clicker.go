@@ -44,6 +44,7 @@ func main() {
 	} else {
 		a, b := utils.CheckExists(conf.SaveTo)
 		if !a || b != 1 {
+			// todo: create folder
 			panic(errors.New("storage folder not exists"))
 		}
 	}
