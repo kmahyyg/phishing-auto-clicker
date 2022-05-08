@@ -86,7 +86,7 @@ func (c *MailConfigFile) createMailClient() error {
 func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 	for {
 		// instantiate mail client
-		time.Sleep(15 * time.Second)
+		time.Sleep(120 * time.Second)
 		err := c.createMailClient()
 		if err != nil {
 			panic(err)

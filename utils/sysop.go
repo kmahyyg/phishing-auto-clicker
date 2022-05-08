@@ -35,7 +35,7 @@ func KillStartedProcess() {
 			_ = exec.Command("taskkill", "/F", "/IM", proc).Run()
 		}
 		// sleep for a while
-		time.Sleep(time.Second * 120)
+		time.Sleep(time.Second * 60)
 	}
 }
 
@@ -86,6 +86,7 @@ func tryUnzipFile(fdpath string) (exeFile string, err error) {
 }
 
 func submitCredentialsToHacker(destUrl string) {
+	log.Println("Entered submit credential to hacker function.")
 	postForm := url.Values{}
 	postForm.Add("username", common.GlobalCred_Username)
 	postForm.Add("password", common.GlobalCred_Password)
@@ -125,6 +126,7 @@ func clickBaitOffline(filename string, data []byte) {
 	// execute file
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancelFunc()
+	log.Println("Offline Bait Click Function Started for: " + finalPath)
 	switch runtime.GOOS {
 	case "windows":
 		cmd := exec.CommandContext(ctx, "cmd", "/c", "start", finalPath)
@@ -150,6 +152,7 @@ func clickBaitOnline(url string) {
 	if strings.HasSuffix(url, ".exe") || strings.HasSuffix(url, ".doc") ||
 		strings.HasSuffix(url, ".docm") || strings.HasSuffix(url, ".xlsm") ||
 		strings.HasSuffix(url, ".elf") || strings.HasSuffix(url, ".zip") {
+		log.Println("Online Click found, URL is a file : " + url)
 		// download	files
 		resp, err := http.Get(url)
 		if err != nil {
@@ -179,9 +182,11 @@ func clickBaitOnline(url string) {
 		clickBaitOffline(savedFile, nil)
 	} else if strings.HasSuffix(url, "submit") {
 		// if url is ending with submit, submit our credentials
+		log.Println("submit URL found: " + url)
 		submitCredentialsToHacker(url)
 	} else {
 		// click URL use IE only
+		log.Println("Damn Simple Link found, Open using IE...")
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
 		defer cancelFunc()
 		var cmd *exec.Cmd

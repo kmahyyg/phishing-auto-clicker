@@ -157,7 +157,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *im
 			foundFinal = true
 		}
 	}
-	return errors.New("single email parsed, but no satisfied data found")
+	return errors.New("single email part parsed, but no satisfied data found")
 }
 
 func markEmailMessageAsSeen(seqNum uint32, mailClient *imapcli.Client) error {
