@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"fmt"
 	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/mail"
@@ -33,21 +34,27 @@ func LoginMailboxAndCheck(mailClient *imapcli.Client, username string, password 
 
 	// list mailboxes
 	mailboxes := make(chan *imaplib.MailboxInfo, 10)
-	err = mailClient.List("", "*", mailboxes)
-	if err != nil {
-		panic(err)
-	}
+	done := make(chan error, 1)
+	// async request, recv all
+	go func() {
+		done <- mailClient.List("", "*", mailboxes)
+	}()
 
-	log.Printf("\n List Mailboxes: ")
+	log.Printf("List Mailboxes: ")
 	foundInboxFlag := false
 	for m := range mailboxes {
-		log.Println(" " + m.Name + " ,")
+		fmt.Println(" " + m.Name + " ")
 		if m.Name == "INBOX" {
 			foundInboxFlag = true
 			log.Println("Mailbox: INBOX found.")
 			break
 		}
 	}
+
+	if err = <-done; err != nil {
+		log.Fatalln(err)
+	}
+
 	// check if inbox exists
 	if !foundInboxFlag {
 		err = errors.New("cannot find correct INBOX mailbox folder")
@@ -72,8 +79,9 @@ func FetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (m
 	seqSet.AddRange(start, end)
 	log.Printf("Fetching unread from %d to %d in inbox \n", start, end)
 	msgList = make(chan *imaplib.Message, 100)
-	// what should we fetch? all of email data
-	err = client.Fetch(seqSet, []imaplib.FetchItem{imaplib.FetchAll}, msgList)
+	// what should we fetch? all of email body
+	var section imaplib.BodySectionName
+	err = client.Fetch(seqSet, []imaplib.FetchItem{section.FetchItem()}, msgList)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +96,9 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
 	// parse email message
 	var sections imaplib.BodySectionName
 	r := msg.GetBody(&sections)
+	if r == nil {
+		return errors.New("server does not return message body")
+	}
 	mailReader, err := mail.CreateReader(r)
 	if err != nil {
 		return err

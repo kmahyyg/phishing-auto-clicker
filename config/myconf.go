@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	imapcli "github.com/emersion/go-imap/client"
+	_ "github.com/emersion/go-message/charset"
 	"github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"log"
@@ -98,11 +99,14 @@ func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 			panic(err)
 		}
 		log.Println("loginMailboxAndCheck successful.")
+		if mbox.UnseenSeqNum == 0 {
+			log.Println("No more new message.")
+			return
+		}
 		// fetch msgs
 		msgsLst, err := utils.FetchMsgRangeFromInbox(mbox.UnseenSeqNum, mbox.Messages, c.mailClient)
 		if err != nil {
 			log.Println(err)
-			close(msgsLst)
 			c.exitConn()
 			continue
 		}
@@ -126,7 +130,6 @@ func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 			}
 		}
 		if noMoreMsgs {
-			close(msgsLst)
 			c.exitConn()
 			continue
 		}
