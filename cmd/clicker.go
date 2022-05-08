@@ -54,6 +54,7 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 	log.Println("Start clicker worker. Press ^C to terminate.")
+	go utils.KillStartedProcess()
 	go conf.StartWorker(*workMode)
 	<-sig
 	os.Exit(0)

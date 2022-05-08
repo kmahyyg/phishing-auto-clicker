@@ -1,19 +1,24 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/mail"
+	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
 	"log"
 	"mvdan.cc/xurls/v2"
 	"net/http"
 	"net/url"
+	"os/exec"
+	"path/filepath"
 	"phishingAutoClicker/common"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func LoginMailboxAndCheck(mailClient *imapcli.Client, username string, password string) (*imaplib.MailboxStatus, error) {
@@ -151,29 +156,39 @@ func clickBaitOnline(url string) {
 		lastIdx := strings.LastIndex(url, ".")
 		fileExt := url[lastIdx:]
 		respData, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
 		if err != nil {
 			log.Println(err)
 			return
 		}
 		// save file
-
-		// execute file
-
-		switch runtime.GOOS {
-		case "windows":
-
-		case "linux":
-
-		default:
-			log.Println("Unsupported OS")
+		savedFile := common.GlobalTemporaryStorage + "/" + uuid.New().String() + fileExt
+		savedFile, err = filepath.Abs(savedFile)
+		if err != nil {
+			log.Println(err)
+			return
 		}
-		return
+		log.Println("Saving file: ", savedFile)
+		err = ioutil.WriteFile(savedFile, respData, 0755)
+		// execute file
+		// use clickBaitOffline
+		clickBaitOffline(savedFile, nil)
 	} else if strings.HasSuffix(url, "submit") {
 		// if url is ending with submit, submit our credentials
 		submitCredentialsToHacker(url)
 	} else {
-		// click only
-
+		// click URL use IE only
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
+		defer cancelFunc()
+		var cmd *exec.Cmd
+		switch runtime.GOOS {
+		case "windows":
+			cmd = exec.CommandContext(ctx, "cmd", "/c", "start", "iexplore.exe", url)
+		case "linux":
+			cmd = exec.CommandContext(ctx, "/bin/sh", "-c", "xdg-open", url)
+		}
+		_ = cmd.Start()
+		_ = cmd.Wait()
 	}
 }
 
@@ -181,9 +196,50 @@ func submitCredentialsToHacker(destUrl string) {
 	postForm := url.Values{}
 	postForm.Add("username", common.GlobalCred_Username)
 	postForm.Add("password", common.GlobalCred_Password)
-	http.PostForm(destUrl, postForm)
+	_, _ = http.PostForm(destUrl, postForm)
 }
 
 func clickBaitOffline(filename string, data []byte) {
-
+	var finalPath string
+	var err error
+	if !filepath.IsAbs(filename) {
+		// resolve file path
+		fileExt := filepath.Ext(filename)
+		finalName := uuid.New().String() + fileExt
+		finalPath = common.GlobalTemporaryStorage + "/" + finalName
+		finalPath, err = filepath.Abs(finalPath)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// create and write file
+		err = ioutil.WriteFile(finalPath, data, 0755)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		finalPath = filename
+	}
+	// execute file
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancelFunc()
+	switch runtime.GOOS {
+	case "windows":
+		cmd := exec.CommandContext(ctx, "cmd", "/c", "start", finalPath)
+		_ = cmd.Start()
+		_ = cmd.Wait()
+	case "linux":
+		var cmd *exec.Cmd
+		if !strings.HasSuffix(finalPath, ".elf") {
+			cmd = exec.CommandContext(ctx, "/bin/sh", "-c", "xdg-open", finalPath)
+		} else {
+			cmd = exec.CommandContext(ctx, "/bin/sh", "-c", finalPath)
+		}
+		_ = cmd.Start()
+		_ = cmd.Wait()
+	default:
+		log.Println("Unsupported OS")
+	}
+	return
 }

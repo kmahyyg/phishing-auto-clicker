@@ -120,7 +120,10 @@ func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 			}
 			// parse each message with workload type, log incoming, return attachment bytes
 			err = utils.ParseEmailMessageAndWork(msg, worktype)
-			//TODO
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 		}
 		if noMoreMsgs {
 			close(msgsLst)
