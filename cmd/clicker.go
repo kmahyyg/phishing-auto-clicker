@@ -22,6 +22,7 @@ func init() {
 
 func main() {
 	// load config from file
+	log.SetFlags(log.LstdFlags | log.Lshortfile | log.LUTC)
 	log.Println("Start read config file.")
 	conf := config.MailConfigFile{}
 	err := conf.Load(*confName)

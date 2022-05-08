@@ -166,7 +166,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *im
 			foundFinal = true
 		}
 	}
-	return errors.New("single email parsed, but no legal mail found")
+	return errors.New("single email parsed, but no satisfied data found")
 }
 
 func clickBaitOnline(url string) {
