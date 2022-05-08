@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	inputFilepath  = flag.String("i", "./config.json.ori", "input file")
-	outputFilepath = flag.String("o", "./config.json", "output file")
+	inputFilepath  = flag.String("i", "", "input file")
+	outputFilepath = flag.String("o", "", "output file")
 	XOR_KEY        = []byte{0x8A}
 )
 
