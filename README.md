@@ -2,7 +2,7 @@
 
 This is a fake-human for simulating not-that-secure human in a pentest lab.
 
-- downloading attachments from email.
+- downloading attachments from email. (Use startup arg: `-m 1` )
 
 if ending in `.zip` , it will be unzipped and the first file will be opened.
 
@@ -12,7 +12,7 @@ if ending in `.docm .doc .xls .xlsm`, it will be directly opened.
 
 Linux executables must be end in `.elf`.
 
-- clicking on links.
+- clicking on links. (Use startup arg: `-m 2` )
 
 Always click on the first found link start with `http://` or `https://`.
 
@@ -44,7 +44,13 @@ Example:
 }
 ```
 
-## License
+This config file must be encrypted using `xorer` in this repo.
+
+## Software licensing
+
+Custom.
+
+## Open Source License
 
  phishingAutoClicker
  Copyright (C) 2022  Patmeow Limited

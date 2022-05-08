@@ -8,3 +8,4 @@ config.tls.json.ori
 config.tls.json
 *.bak
 *.swp
+.phishing-auto-clicker.lock

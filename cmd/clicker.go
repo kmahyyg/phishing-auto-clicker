@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	confName = flag.String("c", "./config.json", "config file")
-	workMode = flag.Int("m", 1, "work mode") // 1=email, 2=link
+	confName = flag.String("c", "./config.json", "config file after encryption")
+	workMode = flag.Int("m", 1, "work mode, 1=email, 2=link") // 1=email, 2=link
 )
 
 func init() {
