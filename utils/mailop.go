@@ -6,6 +6,7 @@ import (
 	"fmt"
 	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
+	_ "github.com/emersion/go-message/charset"
 	"github.com/emersion/go-message/mail"
 	"github.com/google/uuid"
 	"io"

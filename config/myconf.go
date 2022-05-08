@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	imapcli "github.com/emersion/go-imap/client"
-	_ "github.com/emersion/go-message/charset"
 	"github.com/go-playground/validator/v10"
 	"io/ioutil"
 	"log"
