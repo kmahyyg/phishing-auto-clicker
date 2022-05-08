@@ -4,9 +4,13 @@ This is a fake-human for simulating not-that-secure human in a pentest lab.
 
 - downloading attachments from email.
 
-if ending in `.zip` , it will be unzipped with password `infected`.
+if ending in `.zip` , it will be unzipped and the first file will be opened.
+
+We DO NOT support encrypted zip file due to limitation of Golang library.
 
 if ending in `.docm .doc .xls .xlsm`, it will be directly opened.
+
+Linux executables must be end in `.elf`.
 
 - clicking on links.
 
@@ -15,6 +19,12 @@ Always click on the first found link start with `http://` or `https://`.
 The link must start with `http` and follow the format above.
 
 But you should be aware that, before and after the link, there must be a space.
+
+if link is a file with supported extension, it will be downloaded and open.
+
+if link is ended with "submit", a credential will be POST-ed.
+
+if link is just a URL like a webpage, it will be opened. More specifically, in Windows, use IE to open.
 
 # Configuration
 

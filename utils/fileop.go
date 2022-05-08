@@ -24,14 +24,6 @@ func CheckExists(path string) (bool, int) {
 	return true, 0
 }
 
-// MkdirP creates a directory and all its parents
-func MkdirP(path string) error {
-	if err := os.MkdirAll(path, 0755); err != nil {
-		return err
-	}
-	return nil
-}
-
 // XORStream uses XOR to transform data in a simple but not secure way
 func XORStream(key []byte, data []byte) []byte {
 	for i := 0; i < len(data); i++ {
