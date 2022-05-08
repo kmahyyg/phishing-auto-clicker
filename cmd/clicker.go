@@ -63,6 +63,7 @@ func main() {
 	go utils.KillStartedProcess()
 	go conf.StartWorker(*workMode)
 	<-sig
+	cleanPIDLock()
 	os.Exit(0)
 }
 
@@ -74,7 +75,7 @@ func pidLock() bool {
 	}
 	pidLockPath := cwd + "/" + ".phishing-auto-clicker.lock"
 	pidLockPath, _ = filepath.Abs(pidLockPath)
-	if _, err = os.Stat(pidLockPath); err == os.ErrNotExist {
+	if _, err = os.Stat(pidLockPath); os.IsNotExist(err) {
 		// only single instance
 		err = ioutil.WriteFile(pidLockPath, []byte(string(myPid)), 0644)
 		if err != nil {
@@ -86,4 +87,14 @@ func pidLock() bool {
 		log.Fatalln("DO NOT RUN MULTIPLE INSTANCE SIMULTANEOUSLY!")
 	}
 	return false
+}
+
+func cleanPIDLock() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	pidLockPath := cwd + "/" + ".phishing-auto-clicker.lock"
+	pidLockPath, _ = filepath.Abs(pidLockPath)
+	os.Remove(pidLockPath)
 }
