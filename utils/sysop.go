@@ -40,7 +40,7 @@ func KillStartedProcess() {
 }
 
 func tryUnzipFile(fdpath string) (exeFile string, err error) {
-	tmpPath, err := os.MkdirTemp(common.GlobalTemporaryStorage, "-extract")
+	tmpPath, err := os.MkdirTemp(common.GlobalTemporaryStorage, "kk*-extract")
 	if err != nil {
 		return "", err
 	}
