@@ -4,5 +4,7 @@ bin/
 .idea/
 .vscode/
 config.json.ori
+config.tls.json.ori
+config.tls.json
 *.bak
 *.swp
