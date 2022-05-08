@@ -86,7 +86,7 @@ func (c *MailConfigFile) createMailClient() error {
 func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 	for {
 		// instantiate mail client
-		time.Sleep(5 * time.Second)
+		time.Sleep(15 * time.Second)
 		err := c.createMailClient()
 		if err != nil {
 			panic(err)
@@ -100,7 +100,7 @@ func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 		log.Println("loginMailboxAndCheck successful.")
 		if mbox.UnseenSeqNum == 0 {
 			log.Println("No more new message.")
-			return
+			continue
 		}
 		// fetch msgs
 		msgsLst, err := utils.FetchMsgRangeFromInbox(mbox.UnseenSeqNum, mbox.Messages, c.mailClient)
@@ -122,7 +122,7 @@ func (c *MailConfigFile) startEmailEventLoop(worktype int) {
 				break
 			}
 			// parse each message with workload type, log incoming, return attachment bytes
-			err = utils.ParseEmailMessageAndWork(msg, worktype)
+			err = utils.ParseEmailMessageAndWork(msg, worktype, c.mailClient)
 			if err != nil {
 				log.Println(err)
 				continue

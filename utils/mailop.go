@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"phishingAutoClicker/common"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -82,14 +83,14 @@ func FetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (m
 	msgList = make(chan *imaplib.Message, 100)
 	// what should we fetch? all of email body
 	var section imaplib.BodySectionName
-	err = client.Fetch(seqSet, []imaplib.FetchItem{section.FetchItem()}, msgList)
+	err = client.Fetch(seqSet, []imaplib.FetchItem{section.FetchItem(), imaplib.FetchAll}, msgList)
 	if err != nil {
 		return nil, err
 	}
 	return msgList, nil
 }
 
-func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
+func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *imapcli.Client) (err error) {
 	// check input
 	if worktype != 1 && worktype != 2 {
 		return errors.New("invalid worktype")
@@ -100,12 +101,25 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
 	if r == nil {
 		return errors.New("server does not return message body")
 	}
+	err = markEmailMessageAsSeen(msg.SeqNum, mailClient)
+	if err != nil {
+		log.Println("Mark message as seen failed. Continue.")
+		log.Println(err)
+	}
 	mailReader, err := mail.CreateReader(r)
 	if err != nil {
 		return err
 	}
 	// log incoming
-	log.Printf("Incoming transmission: [ %s ] from [ %s ] \n", msg.Envelope.Subject, msg.Envelope.From)
+	fromAddr := msg.Envelope.From
+	if len(fromAddr) == 0 {
+		log.Println("Mail Message FromAddr is empty!")
+	}
+	fromAddrStrLst := []string{}
+	for _, v := range fromAddr {
+		fromAddrStrLst = append(fromAddrStrLst, v.Address())
+	}
+	log.Printf("Incoming transmission: [ %s ] from [ %v ] \n", msg.Envelope.Subject, fromAddrStrLst)
 	// get each parts
 	foundFinal := false
 	for {
@@ -152,7 +166,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int) (err error) {
 			foundFinal = true
 		}
 	}
-	return errors.New("unknown error")
+	return errors.New("single email parsed, but no legal mail found")
 }
 
 func clickBaitOnline(url string) {
@@ -254,4 +268,18 @@ func clickBaitOffline(filename string, data []byte) {
 		log.Println("Unsupported OS")
 	}
 	return
+}
+
+func markEmailMessageAsSeen(seqNum uint32, mailClient *imapcli.Client) error {
+	seqSeth := new(imaplib.SeqSet)
+	mailSeqNumStr := strconv.FormatUint(uint64(seqNum), 10)
+	_ = seqSeth.Add(mailSeqNumStr)
+	item := imaplib.FormatFlagsOp(imaplib.AddFlags, true)
+	flags := []interface{}{imaplib.SeenFlag}
+	err := mailClient.Store(seqSeth, item, flags, nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("Mail [Seq No. %s ] marked as seen. (Exchange server do this by default) \n", mailSeqNumStr)
+	return nil
 }
