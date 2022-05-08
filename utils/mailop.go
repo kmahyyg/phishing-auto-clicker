@@ -65,7 +65,7 @@ func LoginMailboxAndCheck(mailClient *imapcli.Client, username string, password 
 
 func FetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (msgList chan *imaplib.Message, err error) {
 	// build fetch range, start and end must be larger than 0
-	if start < end {
+	if start > end {
 		return nil, errors.New("invalid range for mail message sequence num")
 	}
 	seqSet := new(imaplib.SeqSet)
