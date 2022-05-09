@@ -3,8 +3,10 @@ package main
 import (
 	"errors"
 	"flag"
+	"github.com/MagicPiperSec/software-license/softlic"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -12,6 +14,7 @@ import (
 	"phishingAutoClicker/config"
 	"phishingAutoClicker/utils"
 	"strconv"
+	"time"
 )
 
 var (
@@ -24,8 +27,32 @@ func init() {
 }
 
 func main() {
+	// check license
+	go func() {
+		for {
+			if fstat, ftype := utils.CheckExists("user.lic"); !fstat || ftype != 0 {
+				log.Fatalln("user.lic not exists")
+			}
+			licData, err := ioutil.ReadFile("user.lic")
+			if err != nil {
+				panic(err)
+			}
+			rand.Seed(time.Now().UnixNano())
+			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData)
+			if err != nil {
+				time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+				selfExe, err := os.Executable()
+				if err == nil {
+					os.Remove("user.lic")
+					os.Remove(selfExe)
+				}
+				panic("license invalid, fuck pirate!")
+			}
+			time.Sleep(time.Duration(rand.Intn(60))*time.Second + 10*time.Second)
+		}
+	}()
 	// print version
-	log.Println("phishingAutoClicker version:", common.VERSION)
+	log.Println("phishingAutoClicker version: ", common.VERSION)
 	// no multiple instance
 	if !pidLock() {
 		panic(errors.New("multiple instance is not allowed"))
