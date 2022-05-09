@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
+set -e
 
 export CGO_ENABLED=0
 
@@ -16,7 +17,7 @@ USERID_B=$1
 USERNONCE_B=$2
 USERLIC_TYPE_B=$3
 
-if [ -z "$1" || -z "$2" || -z "$3" ]; then
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
   echo "Usage: $0 <user id> <nonce> <license type>"
   exit 1
 fi
