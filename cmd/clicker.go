@@ -11,6 +11,7 @@ import (
 	"phishingAutoClicker/common"
 	"phishingAutoClicker/config"
 	"phishingAutoClicker/utils"
+	"strconv"
 )
 
 var (
@@ -23,6 +24,9 @@ func init() {
 }
 
 func main() {
+	// print version
+	log.Println("phishingAutoClicker version:", common.VERSION)
+	// no multiple instance
 	if !pidLock() {
 		panic(errors.New("multiple instance is not allowed"))
 	}
@@ -77,7 +81,7 @@ func pidLock() bool {
 	pidLockPath, _ = filepath.Abs(pidLockPath)
 	if _, err = os.Stat(pidLockPath); os.IsNotExist(err) {
 		// only single instance
-		err = ioutil.WriteFile(pidLockPath, []byte(string(myPid)), 0644)
+		err = ioutil.WriteFile(pidLockPath, []byte(strconv.Itoa(myPid)), 0644)
 		if err != nil {
 			panic(err)
 		}
