@@ -9,7 +9,7 @@ BUILDRAND=$(openssl rand -hex 4)
 go mod download
 go install mvdan.cc/garble@latest
 
-garble -literals -tiny -seed=random build -o bin/xorer_${BUILDRAND} -trimpath -ldflags="-s -w -Xcommon.Version=$(git describe --always --dirty --long --tags) -Xcommon.EndUserID=$1 -Xcommon.EndUserNonce=$2 -Xcommon.EndUserPublicKey=$(cat ~/.ylic-root.pub|base64 -w 0) -Xcommon.EndUserLicenseType=T2" cmd/xorer.go
+garble -literals -tiny -seed=random build -o bin/xorer_${BUILDRAND} -trimpath -ldflags="-s -w -X common.Version=$(git describe --always --long --dirty --tags) -X common.EndUserID=$1 -X common.EndUserNonce=$2 -X common.EndUserPublicKey=$(cat ~/.ylic-root.pub) -X common.EndUserLicenseType=T2" cmd/xorer.go
 
-garble -literals -tiny -seed=random build -o bin/clicker_${BUILDRAND} -trimpath -ldflags="-s -w -Xcommon.Version=$(git describe --always --dirty --tags) -Xcommon.EndUserID=$1 -Xcommon.EndUserNonce=$2 -Xcommon.EndUserPublicKey=$(cat ~/.ylic-root.pub|base64 -w 0) -Xcommon.EndUserLicenseType=T2" cmd/clicker.go
+garble -literals -tiny -seed=random build -o bin/clicker_${BUILDRAND} -trimpath -ldflags="-s -w -X common.Version=$(git describe --always --tags --dirty --long) -X common.EndUserID=$1 -X common.EndUserNonce=$2 -X common.EndUserPublicKey=$(cat ~/.ylic-root.pub) -X common.EndUserLicenseType=T2" cmd/clicker.go
 
