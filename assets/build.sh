@@ -1,8 +1,9 @@
 #!/bin/bash
+set -x
 
 export CGO_ENABLED=0
-export GOOS=$(uname -s)
-export GOARCH=$(uname -m)
+export GOOS=$(uname -s | tr '[:upper:]' '[:lower:]')
+export GOARCH=$(uname -m | tr '[:upper:]' '[:lower:]')
 
 BUILDRAND=$(openssl rand -hex 4)
 
