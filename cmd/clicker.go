@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/MagicPiperSec/software-license/softlic"
 	"io/ioutil"
 	"log"
@@ -16,6 +17,8 @@ import (
 	"strconv"
 	"time"
 )
+
+const DEBUG_FLAG = false
 
 var (
 	confName = flag.String("c", "./config.json", "config file after encryption")
@@ -39,6 +42,9 @@ func main() {
 			}
 			rand.Seed(time.Now().UnixNano())
 			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData)
+			if DEBUG_FLAG {
+				fmt.Println(err)
+			}
 			if err != nil {
 				time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
 				selfExe, err := os.Executable()
