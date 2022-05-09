@@ -9,3 +9,4 @@ config.tls.json
 *.bak
 *.swp
 .phishing-auto-clicker.lock
+*.lic
