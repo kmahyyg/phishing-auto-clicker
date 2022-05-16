@@ -74,7 +74,10 @@ func FetchMsgRangeFromInbox(start uint32, end uint32, client *imapcli.Client) (m
 	msgList = make(chan *imaplib.Message, 100)
 	// what should we fetch? all of email body
 	var section imaplib.BodySectionName
-	err = client.Fetch(seqSet, []imaplib.FetchItem{section.FetchItem(), imaplib.FetchAll}, msgList)
+	// BUG HERE: QQMail DOES NOT support "ALL"
+	// Exchange support it but has some limitations
+	// switch to "ENVELOPE" to get the whole email header
+	err = client.Fetch(seqSet, []imaplib.FetchItem{section.FetchItem(), imaplib.FetchEnvelope}, msgList)
 	if err != nil {
 		return nil, err
 	}
