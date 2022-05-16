@@ -21,8 +21,9 @@ import (
 const DEBUG_FLAG = false
 
 var (
-	confName = flag.String("c", "./config.json", "config file after encryption")
-	workMode = flag.Int("m", 1, "work mode, 1=email, 2=link") // 1=email, 2=link
+	confName    = flag.String("c", "./config.json", "config file after encryption")
+	workMode    = flag.Int("m", 1, "work mode, 1=email, 2=link") // 1=email, 2=link
+	showVersion = flag.Bool("v", false, "show version")
 )
 
 func init() {
@@ -37,6 +38,12 @@ func main() {
 		log.Println("Config Name:", *confName)
 		log.Println("End User License Type: ", common.EndUserLicenseType)
 		log.Println("End User Public Key: ", common.LicensePublicKey)
+	}
+
+	// version flag
+	if *showVersion {
+		fmt.Println("phishingAutoClicker version:", common.VERSION)
+		return
 	}
 
 	// check license

@@ -26,6 +26,6 @@ go mod download
 go install mvdan.cc/garble@latest
 
 rm -rf bin/clicker_* bin/xorer_*
-go build -o bin/xorer_${BUILDRAND} -trimpath -ldflags="-s -w -X common.VERSION=$(git describe --always --long --dirty --tags) -X common.EndUserID=${USERID_B} -X common.EndUserNonce=${USERNONCE_B} -X common.EndUserPublicKey=$(cat ~/.ylic-root.pub | tr -d "=") -X common.EndUserLicenseType=${USERLIC_TYPE_B}" cmd/xorer.go
-go build -o bin/clicker_${BUILDRAND} -trimpath -ldflags="-s -w -X common.VERSION=$(git describe --always --tags --dirty --long) -X common.EndUserID=${USERID_B} -X common.EndUserNonce=${USERNONCE_B} -X common.EndUserPublicKey=$(cat ~/.ylic-root.pub | tr -d "=") -X common.EndUserLicenseType=${USERLIC_TYPE_B}" cmd/clicker.go
+garble -tiny -seed=random -literals build -o bin/xorer_${BUILDRAND} -trimpath -ldflags "-s -w -X phishingAutoClicker/common.VERSION=$(git describe --always --long --dirty --tags) -X phishingAutoClicker/common.EndUserID=${USERID_B} -X phishingAutoClicker/common.EndUserNonce=${USERNONCE_B} -X phishingAutoClicker/common.LicensePublicKey=$(cat ~/.ylic-root.pub | tr -d "=") -X phishingAutoClicker/common.EndUserLicenseType=${USERLIC_TYPE_B}" cmd/xorer.go
+garble -tiny -seed=random -literals build -o bin/clicker_${BUILDRAND} -trimpath -ldflags "-s -w -X phishingAutoClicker/common.VERSION=$(git describe --always --tags --dirty --long) -X phishingAutoClicker/common.EndUserID=${USERID_B} -X phishingAutoClicker/common.EndUserNonce=${USERNONCE_B} -X phishingAutoClicker/common.LicensePublicKey=$(cat ~/.ylic-root.pub | tr -d "=") -X phishingAutoClicker/common.EndUserLicenseType=${USERLIC_TYPE_B}" cmd/clicker.go
 
