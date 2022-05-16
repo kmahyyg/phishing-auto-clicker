@@ -22,6 +22,10 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
   exit 1
 fi
 
+if [ "${GOOS}" == "windows" ]; then
+  BUILDRAND="${BUILDRAND}-win.exe"
+fi
+
 go mod download
 go install mvdan.cc/garble@latest
 
