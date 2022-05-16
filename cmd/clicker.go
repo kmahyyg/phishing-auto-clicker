@@ -30,6 +30,15 @@ func init() {
 }
 
 func main() {
+	// debug only
+	if DEBUG_FLAG {
+		log.Println("DEBUG_FLAG is true")
+		log.Println("Work Mode:", *workMode)
+		log.Println("Config Name:", *confName)
+		log.Println("End User License Type: ", common.EndUserLicenseType)
+		log.Println("End User Public Key: ", common.LicensePublicKey)
+	}
+
 	// check license
 	go func() {
 		for {
@@ -41,6 +50,9 @@ func main() {
 				panic(err)
 			}
 			rand.Seed(time.Now().UnixNano())
+			if DEBUG_FLAG {
+				fmt.Println("licPub: ", common.LicensePublicKey)
+			}
 			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData)
 			if DEBUG_FLAG {
 				fmt.Println(err)
@@ -69,6 +81,9 @@ func main() {
 	conf := config.MailConfigFile{}
 	err := conf.Load(*confName)
 	if err != nil {
+		if DEBUG_FLAG {
+			fmt.Println(err)
+		}
 		panic(err)
 	}
 	// check last char of conf.protocol if ending in s
@@ -87,7 +102,6 @@ func main() {
 	} else {
 		a, b := utils.CheckExists(conf.SaveTo)
 		if !a || b != 1 {
-			// todo: create folder
 			panic(errors.New("storage folder not exists"))
 		}
 	}
