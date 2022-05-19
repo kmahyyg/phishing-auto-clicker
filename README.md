@@ -73,4 +73,5 @@ Custom.
 - Enable IMAP4 in Exchange Server refs
   to https://docs.microsoft.com/en-us/exchange/clients/pop3-and-imap4/configure-imap4?view=exchserver-2019
 - Set `loginType` to `PlainTextLogin` , refs to https://techgenix.com/exchange-2019configure-imap-settings/
-  and  https://docs.microsoft.com/en-us/exchange/troubleshoot/client-connectivity/imap-clients-logon-fail-coexist-exchange 
+  and  https://docs.microsoft.com/en-us/exchange/troubleshoot/client-connectivity/imap-clients-logon-fail-coexist-exchange
+- Instruction: https://techgenix.com/exchange-2019configure-imap-settings/

@@ -27,6 +27,7 @@ var (
 )
 
 func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile | log.LUTC)
 	flag.Parse()
 }
 
@@ -83,7 +84,7 @@ func main() {
 		panic(errors.New("multiple instance is not allowed"))
 	}
 	// load config from file
-	log.SetFlags(log.LstdFlags | log.Lshortfile | log.LUTC)
+
 	log.Println("Start read config file.")
 	conf := config.MailConfigFile{}
 	err := conf.Load(*confName)
