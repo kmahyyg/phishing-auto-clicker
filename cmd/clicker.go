@@ -83,6 +83,7 @@ func main() {
 	if !pidLock() {
 		panic(errors.New("multiple instance is not allowed"))
 	}
+	defer cleanPIDLock()
 	// load config from file
 
 	log.Println("Start read config file.")
@@ -122,7 +123,6 @@ func main() {
 	go utils.KillStartedProcess()
 	go conf.StartWorker(*workMode)
 	<-sig
-	cleanPIDLock()
 	os.Exit(0)
 }
 
