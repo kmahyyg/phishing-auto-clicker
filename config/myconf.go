@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	imapcli "github.com/emersion/go-imap/client"
