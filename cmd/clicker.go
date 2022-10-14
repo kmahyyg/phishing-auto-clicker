@@ -61,13 +61,17 @@ func main() {
 			if DEBUG_FLAG {
 				fmt.Println("licPub: ", common.LicensePublicKey)
 			}
+			selfExe, err := os.Executable()
+			if err != nil {
+				panic(err)
+			}
+			// Validate SHA256 of EXE
 			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData)
 			if DEBUG_FLAG {
 				fmt.Println(err)
 			}
 			if err != nil {
 				time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
-				selfExe, err := os.Executable()
 				if err == nil {
 					os.Remove("user.lic")
 					os.Remove(selfExe)
