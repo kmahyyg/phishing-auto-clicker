@@ -65,8 +65,12 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+			exeBytes, err := os.ReadFile(selfExe)
+			if err != nil {
+				panic(err)
+			}
 			// Validate SHA256 of EXE
-			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData)
+			err = softlic.ValidateLicense(common.EndUserID, common.EndUserNonce, common.EndUserLicenseType, common.LicensePublicKey, licData, exeBytes)
 			if DEBUG_FLAG {
 				fmt.Println(err)
 			}
