@@ -72,10 +72,8 @@ func main() {
 			}
 			if err != nil {
 				time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
-				if err == nil {
-					os.Remove("user.lic")
-					os.Remove(selfExe)
-				}
+				os.Remove("user.lic")
+				os.Remove(selfExe)
 				panic("license invalid, fuck pirate!")
 			}
 			time.Sleep(time.Duration(rand.Intn(60))*time.Second + 10*time.Second)
