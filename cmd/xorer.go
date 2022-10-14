@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
+
 	"phishingAutoClicker/utils"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	}
 	log.Println("Input file found")
 	log.Println("Reading input file")
-	readData, err := ioutil.ReadFile(*inputFilepath)
+	readData, err := os.ReadFile(*inputFilepath)
 	if err != nil {
 		panic(err)
 	}

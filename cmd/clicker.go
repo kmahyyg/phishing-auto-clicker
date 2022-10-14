@@ -4,18 +4,19 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/MagicPiperSec/software-license/softlic"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
+	"time"
+
+	"github.com/MagicPiperSec/software-license/softlic"
 	"phishingAutoClicker/common"
 	"phishingAutoClicker/config"
 	"phishingAutoClicker/utils"
-	"strconv"
-	"time"
 )
 
 const DEBUG_FLAG = false
@@ -53,7 +54,7 @@ func main() {
 			if fstat, ftype := utils.CheckExists("user.lic"); !fstat || ftype != 0 {
 				log.Fatalln("user.lic not exists")
 			}
-			licData, err := ioutil.ReadFile("user.lic")
+			licData, err := os.ReadFile("user.lic")
 			if err != nil {
 				panic(err)
 			}
@@ -136,7 +137,7 @@ func pidLock() bool {
 	pidLockPath, _ = filepath.Abs(pidLockPath)
 	if _, err = os.Stat(pidLockPath); os.IsNotExist(err) {
 		// only single instance
-		err = ioutil.WriteFile(pidLockPath, []byte(strconv.Itoa(myPid)), 0644)
+		err = os.WriteFile(pidLockPath, []byte(strconv.Itoa(myPid)), 0644)
 		if err != nil {
 			panic(err)
 		}

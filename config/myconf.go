@@ -37,7 +37,7 @@ func (c *MailConfigFile) Load(path string) error {
 	if st != true || stype < 0 {
 		return errors.New("config file not found")
 	}
-	fData, err := ioutil.ReadFile(path)
+	fData, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

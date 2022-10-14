@@ -4,18 +4,19 @@ import (
 	"archive/zip"
 	"context"
 	"errors"
-	"github.com/google/uuid"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"phishingAutoClicker/common"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"phishingAutoClicker/common"
 )
 
 func KillStartedProcess() {
@@ -70,11 +71,11 @@ func tryUnzipFile(fdpath string) (exeFile string, err error) {
 		if err != nil {
 			return "", err
 		}
-		fileData, err := ioutil.ReadAll(rc)
+		fileData, err := io.ReadAll(rc)
 		if err != nil {
 			return "", err
 		}
-		err = ioutil.WriteFile(exeFile, fileData, 0755)
+		err = os.WriteFile(exeFile, fileData, 0755)
 		if err != nil {
 			return "", err
 		}
@@ -107,7 +108,7 @@ func clickBaitOffline(filename string, data []byte) {
 			return
 		}
 		// create and write file
-		err = ioutil.WriteFile(finalPath, data, 0755)
+		err = os.WriteFile(finalPath, data, 0755)
 		if err != nil {
 			log.Println(err)
 			return
@@ -162,7 +163,7 @@ func clickBaitOnline(url string) {
 		// get extensions
 		lastIdx := strings.LastIndex(url, ".")
 		fileExt := url[lastIdx:]
-		respData, err := ioutil.ReadAll(resp.Body)
+		respData, err := io.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
 			log.Println(err)
@@ -176,7 +177,7 @@ func clickBaitOnline(url string) {
 			return
 		}
 		log.Println("Saving file: ", savedFile)
-		err = ioutil.WriteFile(savedFile, respData, 0755)
+		err = os.WriteFile(savedFile, respData, 0755)
 		// execute file
 		// use clickBaitOffline
 		clickBaitOffline(savedFile, nil)

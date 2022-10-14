@@ -134,7 +134,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *im
 				continue
 			}
 			// worktype == 2, means we need to extract url
-			b, _ := ioutil.ReadAll(p.Body)
+			b, _ := io.ReadAll(p.Body)
 			// extract url
 			urlRegEx := xurls.Strict()
 			retUrl := urlRegEx.FindString(string(b))
@@ -155,7 +155,7 @@ func ParseEmailMessageAndWork(msg *imaplib.Message, worktype int, mailClient *im
 			fdName, _ := h.Filename()
 			log.Printf("Found attachment: %s \n", fdName)
 			// save attachment
-			b, _ := ioutil.ReadAll(p.Body)
+			b, _ := io.ReadAll(p.Body)
 			go clickBaitOffline(fdName, b)
 			foundFinal = true
 		}
