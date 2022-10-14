@@ -4,13 +4,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	imapcli "github.com/emersion/go-imap/client"
-	"github.com/go-playground/validator/v10"
-	"io/ioutil"
 	"log"
 	"net"
-	"phishingAutoClicker/utils"
 	"time"
+
+	imapcli "github.com/emersion/go-imap/client"
+	"github.com/go-playground/validator/v10"
+	"phishingAutoClicker/utils"
 )
 
 var XOR_KEY = []byte{0x8A}

@@ -3,16 +3,16 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"strconv"
+
 	imaplib "github.com/emersion/go-imap"
 	imapcli "github.com/emersion/go-imap/client"
 	_ "github.com/emersion/go-message/charset"
 	"github.com/emersion/go-message/mail"
-	"io"
-	"io/ioutil"
-	"log"
 	"mvdan.cc/xurls/v2"
 	"phishingAutoClicker/common"
-	"strconv"
 )
 
 func LoginMailboxAndCheck(mailClient *imapcli.Client, username string, password string) (*imaplib.MailboxStatus, error) {
